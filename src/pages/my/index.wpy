@@ -1,0 +1,246 @@
+<template>
+  <view class="self-center">
+    <view class="head">
+      <view class="back-deep"></view>
+      <view class="content-info">
+        <view class="head-img-wrap">
+          <!--<image src="{{userInfo.avatarUrl}}" class="head-img"/>-->
+          <!--<view class="authorize-btn" wx:if="{{!authed}}">-->
+            <!--<button open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="onGotUserInfo" size="mini" plain="true">授权获取昵称和头像</button>-->
+          <!--</view>-->
+          <!--<view class="nick-name" wx:else>{{userInfo.nickName}}</view>-->
+          <view class="head-img">
+            <open-data type="userAvatarUrl"></open-data>
+          </view>
+          <open-data type="userNickName" class="nick-name"></open-data>
+          <view class="jdpin">{{JDpin}}</view>
+        </view>
+        <view class="score">
+          积分 {{profile.score||0}}
+        </view>
+        <view class="info-wrapper">
+          <!--<span class="item">-->
+            <!--<span style="vertical-align: middle;">{{profile.medalNum||0}}</span>-->
+            <!--<view class="tip">完成任务</view>-->
+          <!--</span>-->
+          <!--<span class="gap"></span>-->
+          <span class="item">
+            <span>{{profile.ideaCount||0}}</span>
+            <view class="tip">发布创意</view>
+          </span>
+          <span class="gap"></span>
+          <span class="item">
+            <span>{{profile.likeCount||0}}</span>
+            <view class="tip">获赞</view>
+          </span>
+        </view>
+      </view>
+    </view>
+    <view class="content">
+      <!--<navigator url="/pages/my/my-plan" hover-class="none" class="item">-->
+        <!--<image class="icon" mode="aspectFit" src="https://lg-20m1j1pg-1257897017.cos.ap-shanghai.myqcloud.com/mine_icon_message@2x.png"></image>-->
+        <!--<span class="nav">我的消息</span>-->
+        <!--<image class="arrow-icon" mode="aspectFit" src="https://lg-d2xzk6hy-1257228748.cos.ap-shanghai.myqcloud.com/my_icon_details_default@2x.png"></image>-->
+      <!--</navigator>-->
+      <!--<navigator url="/pages/my/my-favorite" hover-class="none" class="item">-->
+        <!--<image class="icon" mode="aspectFit" src="https://lg-20m1j1pg-1257897017.cos.ap-shanghai.myqcloud.com/mine_icon_task@2x.png"></image>-->
+        <!--<span class="nav">我的任务</span>-->
+        <!--<image class="arrow-icon" mode="aspectFit" src="https://lg-d2xzk6hy-1257228748.cos.ap-shanghai.myqcloud.com/my_icon_details_default@2x.png"></image>-->
+      <!--</navigator>-->
+      <!--<navigator url="/pages/diary/index?pageName=my" hover-class="none" class="item">-->
+        <!--<image class="icon" mode="aspectFit" src="https://lg-20m1j1pg-1257897017.cos.ap-shanghai.myqcloud.com/mine_icon_idea@2x.png"></image>-->
+        <!--<span class="nav">我的创意</span>-->
+        <!--<image class="arrow-icon" mode="aspectFit" src="https://lg-d2xzk6hy-1257228748.cos.ap-shanghai.myqcloud.com/my_icon_details_default@2x.png"></image>-->
+      <!--</navigator>-->
+      <!--<view class="item" @tap="clearStorage">清除缓存（临时按钮）</view>-->
+      <!--<view class="item" @tap="logout">退出登录（临时按钮）</view>-->
+    </view>
+    <ComTabbar :route="route" />
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import LoginUtils from '@/public/loginUtils'
+  import Tabbar from '@/components/tab-bar'
+  import API from './api.js'
+  import { Log } from '@/mixins/index'
+
+  export default class My extends wepy.page {
+    config = {
+      navigationBarTitleText: '个人中心',
+      navigationBarBackgroundColor: '#2EDDDF',
+    }
+    components = {
+      'ComTabbar': Tabbar
+    };
+    mixins = [Log];
+    data = {
+      route: '/pages/my/index',
+      userInfo: {
+        avatarUrl: 'https://lg-d2xzk6hy-1257228748.cos.ap-shanghai.myqcloud.com/mine_pic_default avatar@2x.png',
+      },
+      JDpin: '',
+      authed: false,
+      profile: {
+        ideaCount: undefined,
+        likeCount: undefined,
+        score: undefined
+      }
+    }
+    onLoad() {
+      API.getUserInfo().then((res)=>{
+        this.profile.ideaCount = res.data.ideaCount;
+        this.profile.likeCount = res.data.likeCount;
+        this.profile.score = res.data.score;
+        this.JDpin = res.data.jdPin;
+        this.$apply()
+      })
+    }
+    onShow() {
+
+    }
+    methods = {
+
+    }
+
+  }
+</script>
+<style lang="less" scoped>
+  .self-center {
+    .head {
+      position: relative;
+      background: #F4F4F9;
+      padding-bottom: 40rpx;
+      .back-deep {
+        height: 194rpx;
+        background: url("https://lg-20m1j1pg-1257897017.cos.ap-shanghai.myqcloud.com/mine_pic_welcome@2x.png");
+        background-size: cover;
+      }
+      .content-info {
+        width: 710rpx;
+        height: 334rpx;
+        margin: -38rpx auto 30rpx;
+        padding: 30rpx 44rpx 51rpx;
+        position: relative;
+        border-radius: 8rpx;
+        background: #fff;
+        box-sizing: border-box;
+        .head-img-wrap {
+          position: relative;
+          border-radius: 50%;
+          background: #fff;
+          .head-img {
+            display: inline-block;
+            width: 108rpx;
+            height: 108rpx;
+            border-radius: 50%;
+          }
+          .authorize-btn{
+            display: inline-block;
+            vertical-align: super;
+            margin-left: 40rpx;
+          }
+          .nick-name {
+            display: inline-block;
+            font-size:32rpx;
+            margin-left: 40rpx;
+            font-family:PingFangSC-Medium;
+            font-weight:500;
+            color:rgba(59,59,59,1);
+            vertical-align: top;
+          }
+          .jdpin{
+            position: absolute;
+            left: 152rpx;
+            top: 68rpx;
+            font-size:28rpx;
+            font-family:PingFangSC-Regular;
+            font-weight:400;
+            color:rgba(67,67,67,1);
+          }
+        }
+        .score{
+          position: absolute;
+          top: 60rpx;
+          right: 0;
+          width:146rpx;
+          height:60rpx;
+          line-height: 60rpx;
+          text-align: center;
+          background:linear-gradient(178deg,rgba(255,234,66,1) 0%,rgba(246,219,45,1) 55%,rgba(255,215,60,1) 100%);
+          border-radius:34rpx 0px 0px 34rpx;
+          opacity:0.7589;
+          font-size:26rpx;
+          font-family:PingFangSC-Medium;
+          font-weight:500;
+          color:rgba(59,59,59,1);
+        }
+        .info-wrapper{
+          display: flex;
+          flex-direction: row;
+          flex-wrap: nowrap;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 40rpx;
+          text-align:center;
+
+          >span{
+            display: inline-block;
+            vertical-align:middle;
+            width: 250rpx;
+            font-size:52rpx;
+            font-family:DIN-BoldItalic;
+            color:rgba(114,225,111,1);
+            font-style: italic;
+            >span{
+              font-size:52rpx;
+              font-family:DIN-BoldItalic;
+              font-weight:normal;
+              color:rgba(89,89,89,1);
+            }
+            &.gap{
+              width:2rpx;
+              height:52rpx;
+              background:rgba(102,102,102,1);
+              opacity:0.4;
+            }
+            .tip{
+              font-size:24rpx;
+              font-family:PingFangSC-Regular;
+              font-weight:400;
+              color:rgba(102,102,102,1);
+              font-style: normal;
+            }
+          }
+        }
+      }
+    }
+    .content {
+      padding: 0 40rpx;
+      .item{
+        height: 114rpx;
+        line-height: 114rpx;
+        font-size: 32rpx;
+        letter-spacing: 2rpx;
+        color: #393939;
+        border-bottom:1px solid rgba(49,49,49,0.1);
+        .icon{
+          float: left;
+          margin-top: 30rpx;
+          width: 46rpx;
+          height: 46rpx;
+        }
+        .arrow-icon{
+          float: right;
+          margin-top: 42rpx;
+          width: 20rpx;
+          height: 30rpx;
+        }
+        .nav{
+          margin-left: 30rpx;
+          float: left;
+        }
+      }
+    }
+  }
+</style>

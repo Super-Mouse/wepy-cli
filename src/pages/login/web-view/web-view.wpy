@@ -1,0 +1,49 @@
+<template>
+  <view class='login-wrap'>
+    <web-view src="{{url}}"/>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { Log } from '@/mixins/index'
+import loginUtils from '@/public/loginUtils.js'
+const plugin = requirePlugin('loginPlugin')
+
+class LoginWebView extends wepy.page {
+  config = {
+    navigationBarTitleText: '京东登录'
+  }
+
+  mixins = [Log]
+
+  data = {
+    token: '',
+    url: ''
+  }
+
+  onLoad(options={}){
+    let { token } = options;
+    this.handleBackFromH5(token);
+    this.token = token
+  }
+
+  methods = {
+    handleBackFromH5(token) {
+      plugin.tokenLogin({
+        token,
+        callback: () => {
+          loginUtils.handleComponentRedirect()
+        }
+      }).bind(this);
+    }
+  }
+}
+
+export default LoginWebView
+</script>
+<style lang="less">
+</style>
+
+
+
+

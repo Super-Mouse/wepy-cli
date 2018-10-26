@@ -1,0 +1,60 @@
+<template>
+  <view class='login-wrap'>
+    <union 
+      bindtologin='toLoginListener' 
+      bindsmsloginres='smsloginResListener' 
+      token='{{token}}' 
+      nickname='{{nickname}}' 
+      imgurl='{{imgurl}}' />
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { Log } from '@/mixins/index'
+import loginUtils from '@/public/loginUtils.js'
+
+class LoginUnion extends wepy.page {
+  config = {
+    navigationBarTitleText: '京东登录',
+    usingComponents: {
+      "union": "plugin://loginPlugin/union"
+    }
+  }
+
+  mixins = [Log]
+
+  data = {
+    token: '',
+    nickname: '',
+    imgurl: ''
+  }
+
+  onLoad(options={}){
+    let {
+      token = null,
+      nickname = '',
+      url = ''
+    } = options;
+    this.token = token
+    this.nickname = nickname
+    this.imgurl = decodeURIComponent(url)
+  }
+
+  methods = {
+    toLoginListener(event = {}){
+      loginUtils.redirectPage(event.detail.url)
+    },
+    smsloginResListener(event = {}) {
+      loginUtils.handleComponentRedirect(event.detail)
+    }
+  }
+}
+
+export default LoginUnion
+</script>
+<style lang="less">
+</style>
+
+
+
+

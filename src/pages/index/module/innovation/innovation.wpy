@@ -1,0 +1,268 @@
+<template>
+  <view class="innovation">
+    <view class="item" wx:for="{{itemsList}}" wx:key>
+      <!--<view class="tag">-->
+        <!--{{item.tagName}}-->
+      <!--</view>-->
+
+      <view class="row1">
+        <image src="{{item.wxImgUrl}}" />
+        <span class="nickName">{{item.wxNickName}}</span>
+        <span class="cateName">#{{item.cateName}}#</span>
+      </view>
+      <navigator url="{{'/pages/creative/detail?id=' + item.id}}" hover-class="none">
+        <view class="row2">
+          <span class="title">{{item.title}}</span>
+        </view>
+        <view class="row3">
+        <span class="desc">
+          {{item.description}}
+        </span>
+        </view>
+      </navigator>
+      <block wx:if="{{item.imgUrl}}">
+        <view class="img-wrap" >
+          <repeat for="{{item.imgUrl}}" key="idx" index="idx" item="itm">
+            <image src="{{itm}}" mode="aspectFit"/>
+          </repeat>
+        </view>
+      </block>
+      <view class="row4">
+        <view class="gap"></view>
+      </view>
+      <view class="row5">
+        <span class="time">
+          {{item.submitTime}}
+        </span>
+        <span class="like">
+          <view class="{{item.liked?'like-icon':'unlike-icon'}}" @tap="like" data-index="{{index}}"></view>
+          {{item.likeCount}}
+        </span>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+    import wepy from 'wepy';
+    import API from '../../api'
+
+    export default class Innovation extends wepy.component {
+        props = {
+          onReachBottom: {
+            type: Boolean,
+            twoWay: true
+          },
+          isEnd: {
+            type: Boolean,
+            twoWay: true
+          }
+        }
+        data = {
+          itemsList: [],
+          imgList: [],
+          pageNum: 0,
+          pageSize: 10
+        };
+        components = {};
+
+        mixins = [];
+
+        computed = {
+
+        };
+
+        methods = {
+          like(e) {
+            debugger
+            if (this.item.liked){
+              API.postUnLike({
+                id: this.id
+              }).then((res)=>{
+                this.item.liked = false;
+                this.item.likeCount--;
+                this.$apply();
+              })
+            } else{
+              API.postLike({
+                id: this.id
+              }).then((res)=>{
+                this.item.liked = true;
+                this.item.likeCount++;
+                this.$apply();
+              })
+            }
+          }
+        };
+        events = {};
+
+        getInnovations() {
+          API.getInnovations({
+            pageNum: this.pageNum,
+            pageSize: this.pageSize,
+            module: 1
+          }).then((res)=>{
+            if (res.data.entity.length>0){
+              this.itemsList = this.itemsList.concat(res.data.entity);
+              this.onReachBottom = false;
+            }else{
+              this.isEnd = true;
+            }
+            this.$apply();
+          }).catch((error)=>{
+            wx.showToast({
+              title: error.status.toString() + error.error,
+              icon: 'none'
+            })
+          })
+        }
+
+        onLoad() {
+          this.getInnovations();
+        }
+        watch = {
+          onReachBottom(newVal, oldVal) {
+            if(newVal) {
+              this.pageNum++;
+              this.getInnovations();
+            }
+          }
+        }
+    }
+</script>
+<style lang="less" scoped>
+  .innovation{
+    .item{
+      position: relative;
+      box-sizing: border-box;
+      width:670rpx;
+      min-height:360rpx;
+      padding: 24rpx;
+      background:rgba(255,255,255,1);
+      box-shadow:0rpx 4rpx 20rpx 0rpx rgba(0,0,0,0.11);
+      border-radius:12rpx;
+      margin: 32rpx 0;
+      .tag{
+        position: absolute;
+        top: 0;
+        right: 30rpx;
+        width: 44rpx;
+        height: 44rpx;
+        line-height: 44rpx;
+        color: #fff;
+        font-size: 18rpx;
+        background:rgba(255,120,126,1);
+        border-radius:0px 0px 200rpx 200rpx;
+      }
+      .row1{
+        image{
+          width: 72rpx;
+          height: 72rpx;
+          border-radius: 50%;
+          background-color: #ccc;
+          vertical-align: middle;
+        }
+        .nickName{
+          margin-left: 40rpx;
+          font-size:28rpx;
+          font-family:PingFangSC-Medium;
+          font-weight:500;
+          color:rgba(87,87,87,1);
+          vertical-align: middle;
+        }
+        .cateName{
+          float: right;
+          margin: 20rpx 24rpx;
+          font-size:24rpx;
+          font-family:PingFangSC-Medium;
+          font-weight:500;
+          color:rgba(142,142,142,1);
+          vertical-align: middle;
+        }
+      }
+      .row2{
+        margin-top: 12rpx;
+        .title{
+          font-size:32rpx;
+          font-family:PingFangSC-Medium;
+          font-weight:500;
+          color:rgba(48,48,48,1);
+          overflow : hidden;
+          text-overflow: ellipsis;
+          display: -webkit-box;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
+        }
+      }
+      .row3{
+        margin-top: 12rpx;
+        line-height: 40rpx;
+        overflow : hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        .desc{
+          font-size:28rpx;
+          font-family:PingFangSC-Regular;
+          font-weight:400;
+          color:rgba(48,48,48,1);
+        }
+      }
+      .img-wrap{
+        margin-top: 24rpx;
+        height: 134rpx;
+        font-size: 0;
+        overflow: hidden;
+
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        image{
+          width: 202rpx;
+          height: 134rpx;
+        }
+      }
+      .row4{
+        margin-top: 24rpx;
+        .gap{
+          height:4rpx;
+          background-color: #f4f4f4;
+        }
+      }
+      .row5{
+        .time{
+          font-size:24rpx;
+          font-family:PingFangSC-Medium;
+          font-weight:500;
+          color:rgba(151,151,151,1);
+        }
+        .like{
+          float: right;
+          font-size:24rpx;
+          font-family:PingFangSC-Medium;
+          font-weight:500;
+          color:rgba(151,151,151,1);
+          margin-top:12rpx;
+          .like-icon{
+            display: inline-block;
+            width: 38rpx;
+            height: 38rpx;
+            vertical-align: bottom;
+            background:url(https://lg-20m1j1pg-1257897017.cos.ap-shanghai.myqcloud.com/home_icon_like_selected_copy@2x.png);
+            background-size: cover;
+          }
+          .unlike-icon{
+            display: inline-block;
+            width: 38rpx;
+            height: 38rpx;
+            vertical-align: bottom;
+            background:url(https://lg-20m1j1pg-1257897017.cos.ap-shanghai.myqcloud.com/home_icon_like_default_copy@2x.png);
+            background-size: cover;
+          }
+        }
+      }
+    }
+  }
+</style>

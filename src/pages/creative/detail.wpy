@@ -1,0 +1,232 @@
+<template>
+    <view class="innovation-detail">
+      <block wx:if="{{item.imgUrl.length}}">
+        <ComSwiper :imgurl.sync="imgurls" />
+      </block>
+      <view class="user">
+        <image src="{{item.wxImgUrl}}" />
+        <span class="nickName">{{item.wxNickName}}</span>
+        <span class="time">{{item.submitTime}}</span>
+      </view>
+      <view class="gap"></view>
+      <view class="innovation-content">
+        <view class="title">
+          {{item.title}}
+        </view>
+        <view class="cateName">
+          #{{item.cateName}}#
+        </view>
+      </view>
+      <view class="tag-wrap">
+        <span class="item">
+          {{item.tagName}}
+        </span>
+      </view>
+      <view class="desc-wrap">
+        {{item.description}}
+      </view>
+      <button open-type="share" class="share">
+        <view class="icon"></view>
+      </button>
+      <view class="like" >
+        <view class="{{item.liked?'like-icon':'unlike-icon'}}" @tap="like"></view>
+        <view class="value">{{item.likeCount}}</view>
+      </view>
+    </view>
+</template>
+<script>
+  import wepy from 'wepy';
+  import Swiper from '@/base-components/swiper'
+  import API from './api'
+
+  export default class Detail extends wepy.page {
+    config = {
+        navigationBarTitleText: '创意详情'
+    };
+    data = {
+      item: null,
+      id: undefined,
+      imgurls: []
+    };
+    components = {
+      ComSwiper: Swiper
+    };
+
+    mixins = [];
+
+    computed = {};
+
+    methods = {
+      like() {
+        if (this.item.liked){
+          API.postUnLike({
+            id: this.id
+          }).then((res)=>{
+            this.item.liked = false;
+            this.item.likeCount--;
+            this.$apply();
+          })
+        } else{
+          API.postLike({
+            id: this.id
+          }).then((res)=>{
+            this.item.liked = true;
+            this.item.likeCount++;
+            this.$apply();
+          })
+        }
+      }
+    };
+    // 点击转发触发
+    onShareAppMessage(res) {
+      return {
+        title: '东家互动小程序',
+        path: `/pages/creative/detail?id=${this.id}`,
+        success: (res) => {
+          wx.showToast({
+            title: '分享成功！',
+            icon: 'success',
+            duration: 1000
+          });
+        },
+        fail: (res) => {
+        }
+      }
+    }
+    events = {};
+
+    onLoad(param) {
+      this.id = parseInt(param.id) ;
+      API.getInnovationDetail({
+        id: param.id
+      }).then((res)=>{
+        this.item = res.data;
+        this.imgurls = res.data.imgUrl;
+        this.$apply();
+      });
+    }
+  }
+</script>
+<style lang="less" scoped>
+  .innovation-detail{
+    height: 100%;
+    position: relative;
+    image{
+      width: 72rpx;
+      height: 72rpx;
+      border-radius: 50%;
+      background-color: #ccc;
+      vertical-align: middle;
+    }
+    .nickName{
+      margin-left: 40rpx;
+      font-size:28rpx;
+      font-family:PingFangSC-Medium;
+      font-weight:500;
+      color:rgba(87,87,87,1);
+      vertical-align: middle;
+    }
+    .time{
+      float: right;
+      margin: 20rpx 24rpx;
+      font-size:24rpx;
+      font-family:PingFangSC-Medium;
+      font-weight:500;
+      color:rgba(142,142,142,1);
+      vertical-align: middle;
+    }
+    .user{
+      box-sizing: border-box;
+      height: 128rpx;
+      padding: 28rpx 40rpx;
+    }
+    .gap{
+      height:12rpx;
+      background:rgba(238,238,238,1);
+    }
+    .innovation-content{
+      padding: 40rpx 40rpx 0;
+      .title{
+        font-size:40rpx;
+        font-family:PingFangSC-Medium;
+        font-weight:500;
+        color:rgba(63,63,63,1);
+      }
+      .cateName{
+        margin-top: 24rpx;
+        font-size:28rpx;
+        font-family:PingFangSC-Medium;
+        font-weight:500;
+        color:rgba(110,110,110,1);
+      }
+    }
+    .tag-wrap{
+      padding: 0 40rpx;
+      margin-top: 24rpx;
+      font-size: 0;
+      .item{
+        display: inline-block;
+        width:72rpx;
+        height:40rpx;
+        line-height: 40rpx;
+        text-align: center;
+        background:rgba(176,233,220,1);
+        border-radius:20rpx;
+        color: #004C39;
+        font-size:20rpx;
+      }
+    }
+    .desc-wrap{
+      padding: 40rpx;
+    }
+    .share{
+      width:96rpx;
+      height:96rpx;
+      line-height: 96rpx;
+      text-align: center;
+      border-radius: 50%;
+      background-color:rgba(0,0,0,0.7);
+      position: absolute;
+      right: 40rpx;
+      bottom: 190rpx;
+      .icon{
+        position: absolute;
+        top: 48rpx;
+        left: 48rpx;
+        margin-top: -24rpx;
+        margin-left: -20rpx;
+        width:40rpx;
+        height: 48rpx;
+        background: url("https://lg-20m1j1pg-1257897017.cos.ap-shanghai.myqcloud.com/idea_icon_share@2x.png");
+        background-size: cover;
+      }
+    }
+    .like{
+      width:204rpx;
+      height:96rpx;
+      background:rgba(0,0,0,0.7);
+      border-radius:156rpx;
+      position: absolute;
+      right: 40rpx;
+      bottom: 60rpx;
+      .like-icon{
+        position: absolute;
+        width:50rpx;
+        height: 50rpx;
+        background: url("https://lg-20m1j1pg-1257897017.cos.ap-shanghai.myqcloud.com/idea_icon_like_selected@2x.png");
+        background-size: cover;
+        top: 20rpx;
+        left: 38rpx;
+      }
+      .unlike-icon{
+        position: absolute;
+        width:50rpx;
+        height: 50rpx;
+        background: url("https://lg-20m1j1pg-1257897017.cos.ap-shanghai.myqcloud.com/idea_icon_like_default@2x.png");
+        background-size: cover;
+        top: 20rpx;
+        left: 38rpx;
+      }
+    }
+  }
+</style>

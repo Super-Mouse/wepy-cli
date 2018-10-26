@@ -1,0 +1,59 @@
+<template>
+  <view class='login-wrap'>
+    <web-view src="{{url}}"/>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { Log } from '@/mixins/index'
+import loginUtils from '@/public/loginUtils.js'
+const plugin = requirePlugin('loginPlugin')
+
+class LoginWvCommon extends wepy.page {
+  config = {
+    navigationBarTitleText: '京东登录'
+  }
+
+  mixins = [Log]
+
+  data = {
+    url: '',
+    h5_url: ''
+  }
+
+  onLoad(options={}){
+    let { h5_url = '' } = options;
+    this.h5_url = h5_url
+    plugin.wxapp_gentoken({
+      h5_url,
+      callback: (res) => {
+        let { isSuccess, url } = res
+        if (isSuccess) {
+          this.url = url
+          this.$apply()
+        } else {
+          loginUtils.redirectToH5({page:url});
+        }
+      }
+    })
+  }
+
+  methods = {
+    onShareAppMessage() {
+      let { h5_url } = this.data;
+      return {
+        title: '京东',
+        path: `/pages/login/wv-common/wv-common?h5_url=${h5_url}`
+      }
+    }
+  }
+}
+
+export default LoginWvCommon
+</script>
+<style lang="less">
+</style>
+
+
+
+

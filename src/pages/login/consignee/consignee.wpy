@@ -1,0 +1,43 @@
+<template>
+  <view class='login-wrap'>
+    <consignee bindgoback = 'gobackListener' mobile='{{mobile}}'/>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { Log } from '@/mixins/index'
+import loginUtils from '@/public/loginUtils.js'
+
+class LoginConsignee extends wepy.page {
+  config = {
+    navigationBarTitleText: '京东登录',
+    usingComponents: {
+      "consignee": "plugin://loginPlugin/consignee"
+    }
+  }
+
+  mixins = [Log]
+
+  data = {
+    mobile: ''
+  }
+
+  onLoad(options={}){
+    this.mobile = options.mobile
+  }
+
+  methods = {
+    gobackListener() {
+      loginUtils.goBack()
+    }
+  }
+}
+
+export default LoginConsignee
+</script>
+<style lang="less">
+</style>
+
+
+
+

@@ -1,0 +1,162 @@
+<template>
+  <view class="tab-bar-wrap" style="background: {{tabBar.backgroundColor}}">
+    <repeat for="{{tabBar.list}}" key="index" index="index" item="item">
+      <view class="tab-bar-item">
+        <view
+          class="tab-bar-tab {{item.selected ? 'tab-selected' : ''}}"
+          data-page-path="{{item.pagePath}}"
+          @tap="tabChange">
+          <view class="tab-bar-tab-icon">
+            <view class="icon-item" style="background-image: url({{item.pagePath===route ? item.selectedIconPath : item.iconPath}})"></view>
+          </view>
+          <view class="tab-bar-tab-title" style="color: {{item.pagePath===route ? tabBar.selectedColor : tabBar.color}}">{{item.text}}</view>
+        </view>
+      </view>
+    </repeat>
+    <view class="float" wx:if="{{floatShow===''}}"></view>
+  </view>
+</template>
+<script>
+  /**
+    tabBar: {
+      backgroundColor: '#fff', // 默认背景色
+      color: '#7F8389', // 默认颜色
+      selectedColor: '#71E16F', // 选中后的颜色
+      list: [
+        {
+          pagePath: '/pages/index/index', // 跳转路径
+          text: '首页', // 文字
+          iconPath: 'assets/img/tab_icon_home_default@2x.png', // 默认图标
+          selectedIconPath: 'assets/img/tab_icon_home_selected@2x.png', // 选中后的图标
+          selected: true, // 是否选中
+          type:'' // 跳转类型
+        }
+      ]
+    }
+   */
+  import wepy from 'wepy'
+  import LoginUtils from '@/public/loginUtils'
+  class JDTabBar extends wepy.component {
+    props = {
+      route: String
+    }
+    computed = {
+      floatShow() {
+        return wx.getStorageSync('floatShow');
+      }
+    }
+    data = {
+      tabBar: {
+        backgroundColor: '#fff',
+        color: '#7F8389',
+        selectedColor: '#71E16F',
+        list: [
+          {
+            text: '首页',
+            type: 'redirect',
+            pagePath: '/pages/index/index',
+            iconPath: 'https://lg-20m1j1pg-1257897017.cos.ap-shanghai.myqcloud.com/tab_icon_home_default@2x.png',
+            selectedIconPath: 'https://lg-20m1j1pg-1257897017.cos.ap-shanghai.myqcloud.com/tab_icon_home_selected@2x.png'
+          },
+          {
+            type: 'navigate',
+            pagePath: '/pages/creative/submit',
+            iconPath: 'https://lg-20m1j1pg-1257897017.cos.ap-shanghai.myqcloud.com/home_btn_publish@2x.png',
+            selectedIconPath: ''
+          },
+          {
+            text: '我的',
+            type: 'redirect',
+            pagePath: '/pages/my/index',
+            iconPath: 'https://lg-20m1j1pg-1257897017.cos.ap-shanghai.myqcloud.com/tab_icon_mine_default@2x.png',
+            selectedIconPath: 'https://lg-20m1j1pg-1257897017.cos.ap-shanghai.myqcloud.com/tab_icon_mine_selected@2x.png'
+          }
+        ]
+      }
+    }
+
+    methods = {
+      tabChange(e) {
+        let url = e.currentTarget.dataset.pagePath;
+        LoginUtils.checkPtKey().then((res)=>{
+          if (res){
+            url==='/pages/creative/submit'? wx.navigateTo({ url }) : wx.redirectTo({ url });
+          }else{
+            wx.navigateTo({ url: `/pages/login/index/index?returnPage=${url}&pageType=redirect` });
+          }
+        })
+      }
+    }
+  }
+  export default JDTabBar
+</script>
+<style lang="less" scoped>
+  .tab-bar-wrap {
+    position: fixed;
+    box-sizing: border-box;
+    height: 98rpx;
+    border-top: 1rpx solid #ddd;
+    width: 100%;
+    display: -webkit-box;
+    display: flex;
+    transition-duration: .2s;
+    transition-property: height bottom;
+    z-index: 100;
+    justify-content: space-around;
+    align-items: center;
+    left: 0;
+    bottom: 0;
+    // padding-top: 15rpx;
+    .tab-bar-item{
+      position: relative;
+      .tab-bar-tab {
+        flex: 1;
+        display: -webkit-box;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        text-align: center;
+        width: 100%;
+        .tab-bar-tab-icon {
+          display: -webkit-box;
+          display: flex;
+          justify-content: center;
+          .icon-item {
+            width: 54rpx;
+            height: 54rpx;
+            background-size: contain;
+            background-position: center center;
+            background-repeat: no-repeat;
+          }
+        }
+        .tab-bar-tab-title {
+          font-size: 20rpx;
+          margin: 3rpx 0 0 0;
+          text-align: center;
+        }
+      }
+      &:nth-of-type(2){
+        .tab-bar-tab{
+          position:absolute;
+          top:-106rpx;
+          left: -52rpx;
+          width:initial;
+          .icon-item{
+            width: 128rpx;
+            height: 128rpx;
+          }
+        }
+      }
+    }
+    .float{
+      position: absolute;
+      bottom:138rpx;
+      left:302rpx;
+      background: url("https://lg-20m1j1pg-1257897017.cos.ap-shanghai.myqcloud.com/home_pic_hint@2x.png");
+      background-size: cover;
+      width: 174rpx;
+      height: 112rpx;
+    }
+  }
+</style>

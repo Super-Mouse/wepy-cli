@@ -1,0 +1,63 @@
+<template>
+  <view class="index">
+    <ModInnovation :onReachBottom.sync="reachBottom" :isEnd.sync="isEnd" />
+    <ComTabbar :route="route" />
+  </view>
+</template>
+<script>
+  import wepy from 'wepy';
+  import Innovation from './module/innovation/innovation'
+  import Tabbar from '@/components/tab-bar'
+
+  export default class Index extends wepy.page {
+    config = {
+        navigationBarTitleText: '树洞'
+    };
+    data = {
+      route: '/pages/index/index',
+      reachBottom: false,
+      isEnd: false
+    };
+    components = {
+      'ModInnovation': Innovation,
+      ComTabbar: Tabbar
+    };
+
+    mixins = [];
+
+    computed = {};
+
+    methods = {};
+    events = {};
+
+    onReachBottom(e){
+      this.reachBottom = true;
+      if (this.isEnd){
+        wx.showToast({
+          icon: 'none',
+          title: '已到最后'
+        });
+      }
+    }
+    onShow() {
+
+    }
+    onLoad() {
+
+    }
+    watch = {
+      isEnd() {
+        wx.showToast({
+          icon: 'none',
+          title: '已到最后'
+        });
+      }
+    }
+  }
+</script>
+<style lang="less" scoped>
+  .index{
+    padding: 0 40rpx 140rpx;
+
+  }
+</style>

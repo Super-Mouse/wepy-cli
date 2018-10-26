@@ -1,0 +1,112 @@
+<template>
+  <view class="submit-success">
+    <view class="row row1">
+      <span class="icon"></span>
+      <span>发布成功</span>
+    </view>
+    <view class="row row2">
+      恭喜成功收获
+    </view>
+    <view class="row row3">
+      10积分
+    </view>
+    <view class="row row4">
+      积分已经放到您的账户中，可在<navigator url="/pages/my/index" open-type="redirect" hover-class="none">我的</navigator>中查看
+    </view>
+    <navigator url="/pages/index/index" open-type="redirect" hover-class="none" class="btn">
+      去树洞看看
+    </navigator>
+  </view>
+</template>
+<script>
+    import wepy from 'wepy';
+
+    export default class Current extends wepy.page {
+        config = {
+            navigationBarTitleText: '创意发布'
+        };
+        data = {};
+        components = {};
+
+        mixins = [];
+
+        computed = {};
+
+        methods = {};
+        events = {};
+
+        onLoad() {
+
+        }
+    }
+</script>
+<style lang="less" scoped>
+  .submit-success{
+    height: 100%;
+    padding: 0 40rpx;
+    .row{
+      text-align: center;
+    }
+    .row1{
+      padding-top: 254rpx;
+      font-size: 0;
+      span{
+        display: inline-block;
+        vertical-align: middle;
+        font-size:52rpx;
+        font-family:PingFangSC-Regular;
+        font-weight:400;
+        color:rgba(0,0,0,1);
+        &:first-child{
+          width: 96rpx;
+          height: 96rpx;
+          background: url("https://lg-20m1j1pg-1257897017.cos.ap-shanghai.myqcloud.com/publish_pic_success@2x.png");
+          background-size: cover;
+          margin-right: 32rpx;
+        }
+      }
+    }
+    .row2{
+      margin-top: 120rpx;
+      font-size:36rpx;
+      font-family:PingFangSC-Regular;
+      font-weight:400;
+      color:rgba(0,0,0,1);
+    }
+    .row3{
+      font-size:40rpx;
+      font-family:PingFangSC-Medium;
+      font-weight:500;
+      color:rgba(255,84,8,1);
+      margin-top: 28rpx;
+    }
+    .row4{
+      font-size:28rpx;
+      font-family:PingFangSC-Regular;
+      font-weight:400;
+      color:rgba(90,90,90,1);
+      margin-top: 44rpx;
+      navigator{
+        display: inline;
+        font-size:28rpx;
+        font-family:PingFangSC-Medium;
+        font-weight:500;
+        color:rgba(0,221,220,1);
+      }
+    }
+    .btn{
+      width:670rpx;
+      height:92rpx;
+      line-height: 92rpx;
+      text-align: center;
+      background:linear-gradient(180deg,rgba(45,221,224,1) 0%,rgba(89,239,188,1) 100%);
+      border-radius:41rpx;
+      font-size:34rpx;
+      font-family:PingFangSC-Medium;
+      font-weight:500;
+      color:rgba(255,255,255,1);
+      position: absolute;
+      bottom: 40rpx;
+    }
+  }
+</style>

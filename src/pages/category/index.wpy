@@ -1,0 +1,123 @@
+<template>
+  <view class="category-wrap">
+    <view class="left">
+      <view class="{{selectedIndex===index?'select-item item':'item'}}" wx:for="{{totalTree}}" wx:key data-index="{{index}}" @tap="selectCategory">
+        {{item.label}}
+      </view>
+    </view>
+    <view class="right">
+      <view class="title">
+        {{currentCategory2}}
+      </view>
+      <view class="category3-wrap">
+        <view class="category3-item" wx:for="{{category3List}}" wx:key>
+          <navigator url="{{'/pages/creative/submit?id=' + item.id + '&categoryName=' + item.label}}" hover-class="none">
+            {{item.label}}
+          </navigator>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+    import wepy from 'wepy';
+    import API from './api'
+
+    export default class Category extends wepy.page {
+        config = {
+            navigationBarTitleText: '全部分类'
+        };
+        data = {
+          selectedIndex: 0,
+          totalTree: [],
+          currentCategory2: '',
+          category3List: []
+        };
+        components = {};
+
+        mixins = [];
+
+        computed = {
+        };
+
+        methods = {
+          selectCategory(e) {
+            let index = e.currentTarget.dataset.index;
+            this.selectedIndex = index;
+            this.currentCategory2 = this.totalTree[index].label;
+            this.category3List = this.totalTree[index].children;
+            this.$apply();
+          }
+        };
+        events = {};
+
+        onLoad() {
+          API.getCategoryTree().then((res)=>{
+            const data = res.data;
+            this.totalTree = data;
+            this.currentCategory2 = data[0].label;
+            this.category3List = data[0].children;
+            this.$apply();
+          })
+        }
+    }
+</script>
+<style lang="less" scoped>
+  .category-wrap{
+    height: 100%;
+    .left{
+      float: left;
+      width: 180rpx;
+      height: 100%;
+      background-color: #e8e8e8;
+      overflow:auto;
+      .item{
+        height: 116rpx;
+        line-height: 116rpx;
+        font-size:28rpx;
+        font-family:PingFangSC-Regular;
+        font-weight:400;
+        color:rgba(29,29,29,1);
+        text-align: center;
+        &.select-item{
+          background-color: #fff;
+          font-size:32rpx;
+          font-family:PingFangSC-Medium;
+          font-weight:500;
+          color:rgba(29,29,29,1);
+        }
+      }
+    }
+    .right{
+      height: 100%;
+      margin-left: 180rpx;
+      padding: 40rpx;
+      box-sizing:border-box;
+      .title{
+        font-size:24rpx;
+        font-family:PingFangSC-Medium;
+        font-weight:500;
+        color:rgba(29,29,29,1);
+      }
+      .category3-wrap{
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        .category3-item{
+          width: 234rpx;
+          height: 56rpx;
+          line-height: 56rpx;
+          text-align: center;
+          background-color: #f7f7f7;
+          font-size:24rpx;
+          font-family:PingFangSC-Regular;
+          font-weight:400;
+          color:rgba(29,29,29,1);
+          margin: 22rpx 0 0 0;
+        }
+      }
+    }
+  }
+</style>

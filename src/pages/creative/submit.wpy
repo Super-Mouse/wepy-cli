@@ -1,0 +1,379 @@
+<template>
+  <view class="submit-creative">
+    <form @submit="bindFormSubmit" hidden="{{showModal}}">
+      <navigator url="/pages/category/index" open-type="navigate" hover-class="none" class="select-category">
+        <span class="nav">{{categoryName||'请选择分类'}}</span>
+        <image class="arrow-icon" mode="aspectFit" src="https://lg-d2xzk6hy-1257228748.cos.ap-shanghai.myqcloud.com/my_icon_details_default@2x.png"></image>
+      </navigator>
+      <view class='tags-wrap' @tap="selectTag">
+        <span wx:for="{{tags}}" wx:for-item="item" wx:for-index="index" class="{{index===itemSelected?'btn selected':'btn'}}" wx:key data-index="{{index}}">{{item.name}}</span>
+      </view>
+      <view class="section">
+        <input placeholder="创意名称" placeholder-style="font-size:34rpx;font-family:PingFangSC-Medium;font-weight:400;color:rgba(169,169,169,1);" name="titleInput" maxlength="20" value="{{title}}" bindinput="titleInput" />
+      </view>
+      <view class="section">
+        <textarea placeholder="描述下你的idea吧，我们会认真查看和反馈的" placeholder-style="font-size:32rpx;font-family:PingFangSC-Regular;font-weight:400;color:rgba(169,169,169,1);" name="contentTextarea" value="{{content}}" maxlength="1000" bindinput="contentTextarea" />
+        <span class="content-word-num">{{content.length}}/1000</span>
+      </view>
+      <view class="img-wrap">
+        <view class="img-item" wx:for="{{imageList}}" index="index" wx:key>
+          <image mode="aspectFill" src="{{item.path}}" />
+          <view class="icon" @tap="deleteImg({{index}})"></view>
+        </view>
+        <view class="add-img" @tap="getImage" wx:if="{{imageList.length <9}}">+</view>
+      </view>
+      <view class="section">
+        <span class="email-label">
+          邮箱：
+        </span>
+        <input class="email-input" placeholder="不会对外公开哦～" placeholder-style="font-size:32rpx;font-family:PingFangSC-Regular;font-weight:400;color:rgba(169,169,169,1);" name="emailInput" value="{{email}}" bindinput="emailInput" />
+      </view>
+      <view class="checkbox-wrap">
+        <checkbox value="" checked="true"/>我同意将创意进行公开并遵守用户版权保护规定
+      </view>
+      <!--<button loading="{{btnLoading}}" form-type="submit" class="{{canSubmit?'can-submit':'can-not-submit'}}" disabled="{{disabled}}" wx:if="{{isAuthed}}">-->
+        <!--发 表-->
+      <!--</button>-->
+      <button open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="onGotUserInfo" class="{{canSubmit?'can-submit':'can-not-submit'}}" disabled="{{disabled}}">发 表</button>
+    </form>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy';
+  import {HOST} from '@/public/conf'
+  import {TAG, IMGHOST} from '@/public/constant'
+  import API from './api'
+
+  export default class CreativeSubmit extends wepy.page {
+    config = {
+      navigationBarTitleText: '创意发布'
+    };
+    data = {
+      taskId: '',
+      tagType: '',
+      canSubmit: false,
+      disabled: true,
+      categoryName: '',
+      categoryId: undefined,
+      tags: [
+        {name: '外观'},
+        {name: '性能'},
+        {name: '硬件'},
+        {name: '软件'},
+        {name: '服务'},
+        {name: '其他'},
+      ],
+      itemSelected: undefined,
+      title: '',
+      content: '',
+      imageList: [],
+      email: '',
+      showModal: false,
+      completeType: '',
+      completeInfo: {},
+      dayOfPlan: undefined,
+      orderNum: undefined,
+      btnLoading: false,
+      isAuthed: false
+    };
+    components = {
+
+    };
+
+    mixins = [];
+
+    computed = {
+      canSubmit() {
+        return this.categoryName!==''&&this.itemSelected!==undefined&&this.title!==''&&this.content!==''&&this.email!=='';
+      },
+      disabled() {
+        return !this.canSubmit;
+      }
+    };
+
+    uploadImg() {
+      let tempFilePaths = this.imageList;
+      return Promise.all(tempFilePaths.map((tempFilePath, index) => {
+        return new Promise(function(resolve, reject) {
+          wx.uploadFile({
+            url: `${HOST}/image/_save/`, //仅为示例，非真实的接口地址
+            filePath: tempFilePath.path,
+            name: 'image',
+            formData: null,
+            success: (res)=>{
+              if (res.statusCode === 200){
+                resolve(res.data)
+              } else{
+                reject(res)
+              }
+            }
+          })
+        })
+      }))
+    }
+
+    checkEmail() {
+      return /^\w+@[a-z0-9]+\.[a-z]{2,4}$/.test(this.email);
+    }
+
+    bindFormSubmit(e) {
+      if (!this.checkEmail()) {
+        wx.showToast({
+          icon: 'none',
+          title: '邮箱格式不正确'
+        })
+        return;
+      }
+      this.disabled = true;
+      this.btnLoading = true;
+      wx.showLoading({
+        mask: true
+      });
+      this.uploadImg().then(res=>{
+        let urls = [];
+        for (let i of res){
+          let data = JSON.parse(i);
+          urls.push(`${IMGHOST}/${data.data.auName}/${data.data.url}`)
+        }
+        return API.postInnovation({
+          cateId: this.categoryId,
+          tagType: this.tagType,
+          title: this.title,
+          description: this.content,
+          imgUrl: urls.join(';'),
+          mail: this.email
+        })
+      }).then(res => {
+        this.btnLoading = false;
+        this.disabled = false;
+        wx.hideLoading();
+        this.$apply();
+        wx.navigateTo({
+          url: './success'
+        })
+      }).catch(err => {
+        wx.showToast({
+          icon: 'none',
+          title: err.message||err.errMsg
+        });
+        this.btnLoading = false;
+        this.disabled = false
+      })
+    }
+    methods = {
+      onGotUserInfo (e) {
+        this.isAuthed = true;
+        wepy.setStorageSync('storeAuthed', true);
+        const userInfo = e.detail.userInfo;
+        API.putUserInfo({
+          wxImgUrl: userInfo.avatarUrl,
+          wxNickName: userInfo.nickName
+        }).then(()=>{
+          this.bindFormSubmit();
+        });
+        this.$apply();
+      },
+      selectTag(e) {
+        let index = e.target.dataset.index;
+        this.itemSelected = index;
+        this.tagType = TAG[index];
+      },
+      titleInput(e) {
+        this.title = e.detail.value;
+      },
+      contentTextarea(e) {
+        this.content = e.detail.value;
+      },
+      emailInput(e) {
+        this.email = e.detail.value;
+      },
+      getImage() {
+        wx.chooseImage({
+          count: 9 - this.imageList.length,
+          success: (res)=> {
+            this.imageList = this.imageList.concat(res.tempFiles);
+            if (this.imageList.length >9){
+              this.imageList.splice(9)
+            }
+            this.$apply();
+          }
+        })
+      },
+      deleteImg(index) {
+        this.imageList.splice(index, 1)
+      }
+    };
+    events = {
+
+    };
+    watch = {
+
+    }
+    onShow() {
+      this.isAuthed = wx.getStorageSync('storeAuthed')
+    }
+    onLoad(param) {
+      this.categoryId = param.id;
+      this.categoryName = param.categoryName;
+      // 进入到发布页面后首页就不再显示浮框了
+      wx.setStorageSync('floatShow', false)
+    }
+  }
+</script>
+<style lang="less" scoped>
+  .submit-creative{
+    padding-bottom: 40rpx;
+    .select-category{
+      height: 114rpx;
+      line-height: 114rpx;
+      background-color: #fff;
+      font-size: 32rpx;
+      letter-spacing: 2rpx;
+      color: #393939;
+      border-bottom:1px solid rgba(49,49,49,0.1);
+      .arrow-icon{
+        float: right;
+        margin: 42rpx;
+        width: 20rpx;
+        height: 30rpx;
+      }
+      .nav{
+        margin-left: 44rpx;
+        float: left;
+        font-size:32rpx;
+        font-family:PingFangSC-Medium;
+        font-weight:500;
+        color:rgba(21,21,21,1);
+      }
+    }
+    .tags-wrap{
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 40rpx 20rpx;
+      border-bottom:1px solid rgba(49,49,49,0.1);
+      .btn{
+        width:88rpx;
+        height:48rpx;
+        background:rgba(236,236,236,1);
+        border-radius:25rpx;
+        line-height: 48rpx;
+        font-size:28rpx;
+        color:#767676;
+        text-align: center;
+        margin: 0 10rpx;
+        &.selected{
+          color: #ffffff;
+          background:linear-gradient(180deg,rgba(45,221,224,1) 0%,rgba(89,239,188,1) 100%);
+        }
+      }
+    }
+    .section{
+      position: relative;
+      background-color: #fff;
+      padding: 40rpx;
+      font-size:40rpx;
+      font-family:PingFangSC-Medium;
+      font-weight:500;
+      color:rgba(21,21,21,1);
+      border-bottom:1px solid rgba(49,49,49,0.1);
+      textarea{
+        width: 100%;
+        height: 290rpx;
+        font-size: 32rpx;
+        overflow: hidden;
+        font-family:PingFangSC-Regular;
+        font-weight:400;
+        color:rgba(21,21,21,1);
+      }
+      input.email-input{
+        display: inline-block;
+        vertical-align: middle;
+      }
+      >span{
+        font-size: 32rpx;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .content-word-num{
+        position: absolute;
+        right: 40rpx;
+        bottom: 9rpx;
+        font-size:24rpx;
+        font-family:PingFangSC-Regular;
+        font-weight:400;
+        color:rgba(0,221,220,1);
+      }
+    }
+    .img-wrap{
+      box-sizing: border-box;
+      padding: 40rpx;
+      border-bottom:1px solid rgba(49,49,49,0.1);
+      .img-item{
+        display: inline-block;
+        position: relative;
+        font-size:0;
+        vertical-align: middle;
+        image{
+          width:200rpx;
+          height:200rpx;
+          margin-right: 10rpx;
+          margin-top: 10rpx;
+        }
+        .icon{
+          position: absolute;
+          width: 38rpx;
+          height: 38rpx;
+          top: 16rpx;
+          right: 16rpx;
+          background: url("https://lg-d2xzk6hy-1257228748.cos.ap-shanghai.myqcloud.com/publish_btn_delete@2x.png");
+          background-size: cover;
+        }
+      }
+      .add-img{
+        display: inline-block;
+        box-sizing: border-box;
+        width:200rpx;
+        height:200rpx;
+        font-size: 88rpx;
+        color: #aaa;
+        font-weight: 300;
+        line-height: 200rpx;
+        text-align: center;
+        background-color: #f6f6f6;
+        vertical-align: bottom;
+      ;
+      }
+    }
+    .checkbox-wrap{
+      font-size:24rpx;
+      font-family:PingFangSC-Medium;
+      font-weight:500;
+      color:rgba(95,94,94,1);
+      padding: 30rpx 40rpx;
+    }
+    .can-submit{
+      width:670rpx;
+      height:92rpx;
+      background:linear-gradient(180deg,rgba(45,221,224,1) 0%,rgba(89,239,188,1) 100%);
+      border-radius:41rpx;
+      font-size:36rpx;
+      font-family:PingFangSC-Regular;
+      font-weight:400;
+      color:rgba(255,255,255,1);
+    }
+    .can-not-submit{
+      width:670rpx;
+      height:92rpx;
+      background:linear-gradient(180deg,rgba(45,221,224,1) 0%,rgba(89,239,188,1) 100%);
+      border-radius:41px;
+      font-size:36rpx;
+      opacity:0.3;
+      font-family:PingFangSC-Regular;
+      font-weight:400;
+      color:rgba(255,255,255,1);
+    }
+  }
+</style>

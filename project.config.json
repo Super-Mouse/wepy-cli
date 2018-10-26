@@ -1,0 +1,67 @@
+{
+	"description": "A WePY project",
+	"setting": {
+		"urlCheck": false,
+		"es6": false,
+		"postcss": true,
+		"minified": false,
+		"newFeature": true,
+		"nodeModules": false
+	},
+	"compileType": "miniprogram",
+	"appid": "wx376c2befa6234421",
+	"projectname": "wx-3c",
+	"miniprogramRoot": "dist/",
+	"libVersion": "2.3.0",
+	"condition": {
+		"search": {
+			"current": -1,
+			"list": []
+		},
+		"conversation": {
+			"current": -1,
+			"list": []
+		},
+		"plugin": {
+			"current": -1,
+			"list": []
+		},
+		"game": {
+			"list": []
+		},
+		"miniprogram": {
+			"current": 4,
+			"list": [
+				{
+					"id": -1,
+					"name": "创意发布",
+					"pathName": "pages/creative/submit",
+					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "我的",
+					"pathName": "pages/my/index",
+					"query": ""
+				},
+				{
+					"id": 2,
+					"name": "创意详情",
+					"pathName": "pages/creative/detail",
+					"query": "id=2244"
+				},
+				{
+					"id": -1,
+					"name": "选择品类",
+					"pathName": "pages/category/index",
+					"query": "id=2244"
+				},
+				{
+					"id": -1,
+					"name": "发布成功",
+					"pathName": "pages/creative/success"
+				}
+			]
+		}
+	}
+}

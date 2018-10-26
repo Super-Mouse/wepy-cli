@@ -1,0 +1,40 @@
+<template>
+  <view class='login-wrap'>
+    <main binddologinres='dologinResListener'/>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { Log } from '@/mixins/index'
+import loginUtils from '@/public/loginUtils.js'
+
+class LoginMain extends wepy.page {
+  config = {
+    navigationBarTitleText: '京东登录',
+    usingComponents: {
+      "main": "plugin://loginPlugin/main",
+      "instruction":"plugin://loginPlugin/instruction"
+    }
+  }
+
+  mixins = [Log]
+
+  data = {
+    code: ''
+  }
+
+  methods = {
+    dologinResListener(event={}){
+      loginUtils.handleComponentRedirect(event.detail)
+    }
+  }
+}
+
+export default LoginMain
+</script>
+<style lang="less">
+</style>
+
+
+
+

@@ -1,0 +1,176 @@
+<template>
+  <view class='login-wrap'>
+    <index bindsmsloginres='smsloginResListener' config='{{config}}'/>
+    <button
+      class="phone-btn {{ stopClick ? 'btn-disabled' :'' }}"
+      open-type="getPhoneNumber"
+      bindgetphonenumber="getPhoneNumber">微信手机号快捷登录</button>
+    <instruction/>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { Log } from '@/mixins/index'
+import { config } from '@/public/loginConfig.js'
+import loginUtils from '@/public/loginUtils.js'
+const plugin = requirePlugin('loginPlugin')
+const CURRENT_URL = '/pages/login/index/index'
+
+class Login extends wepy.page {
+  config = {
+    navigationBarTitleText: '京东登录',
+    usingComponents: {
+      "index": "plugin://loginPlugin/index",
+      "instruction":"plugin://loginPlugin/instruction"
+    }
+  }
+
+  mixins = [Log]
+
+  components = {
+  }
+
+  data = {
+    config,
+    code: '',
+    detail: '',
+    stopClick: false
+  }
+
+  computed = {
+
+  }
+
+  events = {
+
+  };
+
+  onLoad(options) {
+    try{
+      let param = JSON.parse(options.returnPage);
+      let obj = {
+        returnPage: param.url,
+        pageType: options.pageType
+      };
+      let searchStr = '';
+      for (let i in param) {
+        if (i !== 'url') {
+          searchStr += `${i}=${param[i]}&`
+        }
+      }
+      obj.returnPage += '?' + searchStr;
+      loginUtils.setLoginParamsStorage(obj);
+    }catch (err) {
+      loginUtils.setLoginParamsStorage(options);
+    }
+    wx.login({
+      success: (res = {}) => {
+        this.code = res.code
+        this.$apply()
+      }
+    })
+  }
+
+  onUnload(event){
+    plugin.clickLog({
+      event,
+      eid: 'WLogin_Mian_Close',
+      target: CURRENT_URL
+    })
+  }
+
+  handleError(params = {}) {
+    let {
+      err_msg,
+      detail
+    } = params
+    wx.showModal({
+      title: '提示',
+      content: err_msg || '系统错误，请退出重试',
+      success: (res) => {
+        loginUtils.handleComponentRedirect(detail)
+      }
+    });
+  }
+
+  mobileLogin(){
+    let { code, detail } = this.data;
+    let {
+      iv,
+      encryptedData
+    } = detail;
+    if (!code || !iv || !encryptedData) return
+    plugin.WXMobileLogin({
+      detail,
+      code,
+      callback: (res = {}) => {
+        this.stopClick = false
+        this.$apply()
+        let {
+          err_msg,
+          url
+        } = res;
+        if (err_msg) {
+          this.handleError({
+            detail,
+            err_msg
+          });
+        } else {
+          loginUtils.handleComponentRedirect({
+            url
+          })
+        }
+      }
+    });
+  }
+
+  methods = {
+    smsloginResListener(event = {}) {
+      loginUtils.handleComponentRedirect(event.detail)
+    },
+    getPhoneNumber(event = {}) {
+      let {
+        stopClick
+      } = this.data;
+      if (stopClick) {
+        wx.showToast({
+          icon: 'none',
+          title: '请不要重复点击'
+        })
+        return
+      }
+      this.detail = event.detail
+      this.stopClick = true
+      this.$apply()
+      this.mobileLogin()
+      plugin.clickLog({
+        event,
+        eid: 'WLogin_Index_QuickLog',
+        target: CURRENT_URL
+      })
+    }
+  }
+}
+
+export default Login
+</script>
+<style lang="less">
+.login-wrap {
+  overflow: hidden;
+  .phone-btn{
+    margin: 40rpx auto 152rpx auto;
+    width: 658rpx;
+    height: 92rpx;
+    border-radius: 100rpx;
+    background-color: #71E16F;
+    color: #fff;
+  }
+  .phone-btn::after{
+    border: none
+  }
+}
+</style>
+
+
+
+
